@@ -13,17 +13,25 @@ class b_plus_tree{
     Node* next{nullptr};
     int count{0};
     bool leaf = 0;
+    int capacity;
 
 
     Node(int M_){
       keys = new T[M_-1];
       children = new Node*[M_];
+      capacity = M_;
 
     }
 
 
     bool isLeaf(){
       return leaf;
+    }
+
+
+    ~Node(){
+      delete[] keys;
+      delete[] children;
     }
 
 
@@ -34,10 +42,102 @@ class b_plus_tree{
   Node* root{nullptr};
 
 
-  pair<pair<Node*,Node*>,T> leaf_division_pre(Node*& leaf, T data){}
-  void leaf_division(Node*&leaf){}
-  void node_division(Node*&node){}
-  void node_overload(Node*& node, T data, Node* left, Node* right){}
+  b_plus_tree(int M){
+    root = new Node(M);
+    root->leaf = 1;
+  }
+
+
+  pair<pair<Node*,Node*>,T> leaf_division_pre(Node*& leaf, T data){
+    Node* right = new Node(M);
+    right->leaf = 1;
+    int pos_subir = (M-1)/2;
+    int temp = 0;
+    int count = 0;
+    int insert = depth_position(leaf,data);
+
+
+    for(int i = pos_subir;i<= leaf->count ;++i){
+      if(pos_subir > insert || i <= insert)
+	right->keys[temp++] = i == insert ? data : leaf->keys[i];
+      else 
+	right->keys[temp++] = leaf->keys[i-1];
+
+      if(i != insert) ++count;
+
+    }
+    right->count = temp;
+    leaf->count -= count;
+    key_insertion(leaf,insert,data);
+
+    right->next = leaf->next;
+    leaf->next = right;
+    return {{leaf,right},right->keys[0]};
+
+  }
+  pair<pair<Node*,Node*>,T> leaf_division(Node*&leaf){
+    Node* right = new Node(M);
+    right->leaf = 1;
+    int pos_subir = (M-1)/2;
+    int temp = 0;
+
+    for(int i = pos_subir;i< leaf->count;++i){
+      right->keys[temp++] = leaf->keys[i];
+
+    }
+    right->count = temp;
+    leaf->count -= temp;
+    right->next = leaf->next;
+    leaf->next = right;
+    return {{leaf,right},right->keys[0]};
+
+
+  }
+  pair<pair<Node*,Node*>,T> node_division(Node*&node){
+    Node* right = new Node(M);
+    int pos_subir = (M-1)/2;
+    int temp = 0;
+
+    for(int i = pos_subir + 1;i<= node->count ;++i){
+      if(i < node->count){
+	right->keys[temp++] = node->keys[i];
+	right->children[temp-1] = node->children[i];
+      }
+      else
+	right->children[temp] = node->children[i];
+
+    }
+    right->count = temp;
+    node->count -= (temp + 1);
+
+    return {{node,right},node->keys[pos_subir]};
+  }
+  void node_overload(Node*& node, T data, Node* left, Node* right){
+
+    if(node->capacity != M + 1){
+      Node* new_node = new Node(M+1);
+      for(int i = 0;i<= node->count;++i){
+	if(i < node->count)
+	  new_node->keys[i] = node->keys[i];
+
+	new_node->children[i] = node->children[i];
+      }
+      new_node->next = node->next;
+      new_node->count = node->count;
+      new_node->leaf = node->leaf;
+      delete[] node->keys;
+      delete[] node->children;
+
+      node = new_node;
+    }
+
+    int dp = depth_position(node, data);
+
+    key_insertion(node,data,dp);
+    if(!node->isLeaf())
+      two_child_insertion(node, left, right, dp);
+
+  }
 
   int depth_position(Node*& node,T data){
     int retorno = 0;
@@ -59,7 +159,7 @@ class b_plus_tree{
   }
 
   void two_child_insertion(Node*& node, Node* left, Node* right,int pos){
-    int temp = node->count+1;
+    int temp = node->count;
     while(temp != pos+1){
       node->children[temp] = node->children[temp-1];
     }
@@ -87,8 +187,7 @@ class b_plus_tree{
 
 
 	}else{
-	  auto retorno = leaf_division(actual);
-	  node_overload(actual,retorno.second,retorno.first.first,retorno.first.second);
+	  node_overload(actual,data,nullptr,nullptr);
 
 	}
       }
