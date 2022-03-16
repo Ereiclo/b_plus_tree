@@ -105,7 +105,9 @@ class b_plus_tree{
 
   }
 
-  void insert(T data){}
+  void insert(T data){
+    insert(root,data);
+  }
 
 
   void remove(T data){}
@@ -120,13 +122,52 @@ class b_plus_tree{
   bool find(){ return false;}
 
 
-  void showInOrder(){}
+  void showInOrder(){
+    auto temp = root;
+    while(!temp->isLeaf()){
+      temp = temp->children[0];
+    }
 
 
-  void showPreOrder(){}
+    while(temp != nullptr){
+      for(int i = 0;i< temp->count;++i)
+	cout<<temp->keys[i]<<" ";
+      cout<<" ";
+      temp = temp->next;
+    }
 
 
-  void showPostOrder(){}
+  }
+
+
+  void showPreOrder(Node*actual){
+
+    for(int i = 0;i<= actual->count;++i){
+      if(i != actual->count)
+	cout<<actual->keys[i]<<" ";
+      if(!actual->isLeaf())
+	showPreOrder(actual->children[i]);
+    }
+
+  }
+  void showPreOrder(){
+    showPreOrder(root);
+  }
+
+
+  void showPostOrder(Node*actual){
+    for(int i = 0;i<= actual->count;++i){
+      
+      if(!actual->isLeaf())
+	showPreOrder(actual->children[i]);
+      if(i != actual->count)
+	cout<<actual->keys[i]<<" ";
+    }
+  }
+  void showPostOrder(){
+    showPostOrder(root);
+
+  }
 
 
 
