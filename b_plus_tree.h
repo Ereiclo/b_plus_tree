@@ -38,9 +38,35 @@ class b_plus_tree{
   void leaf_division(Node*&leaf){}
   void node_division(Node*&node){}
   void node_overload(Node*& node, T data, Node* left, Node* right){}
-  void depth_position(Node*& node,T data){}
-  void key_insertion(Node*& node, T data, int pos){}
-  void two_child_insertion(Node*& node, Node* left, Node* right,int pos){}
+
+  int depth_position(Node*& node,T data){
+    int retorno = 0;
+
+    while(retorno < node->count && node->keys[retorno] < data) ++retorno;
+
+
+    return retorno;
+
+  }
+
+  void key_insertion(Node*& node, T data, int pos){
+    int temp = node->count;
+    while(temp != pos){
+      node->keys[temp] = node->keys[temp-1];
+    }
+    node->keys[pos] = data;
+    ++node->count;
+  }
+
+  void two_child_insertion(Node*& node, Node* left, Node* right,int pos){
+    int temp = node->count+1;
+    while(temp != pos+1){
+      node->children[temp] = node->children[temp-1];
+    }
+    node->children[pos] = left;
+    node->children[pos+1] = right;
+
+  }
 
 
   void insert(Node*& actual,T data){
@@ -114,6 +140,7 @@ class b_plus_tree{
 
   void merge(Node*& nodo, Node* left, Node*right,int & depht_pos, T data){}
   void left_rot(Node*nodo,Node*left,Node* right,int & depht_pos,T data){}
+  void right_rot(Node*nodo,Node*left,Node* right,int & depht_pos,T data){}
 
 
   void show_Range(){}
@@ -157,7 +184,7 @@ class b_plus_tree{
 
   void showPostOrder(Node*actual){
     for(int i = 0;i<= actual->count;++i){
-      
+
       if(!actual->isLeaf())
 	showPreOrder(actual->children[i]);
       if(i != actual->count)
