@@ -263,12 +263,107 @@ class b_plus_tree{
   }
 
 
+  void remove(Node*& actual,T data,Node*&cambiar,int&pos){
+    if(actual->isLeaf()){
+      int dp = depth_position(actual,data) + 1;
+      
+      while(dp < actual->count){
+	actual->keys[dp-1] = actual->keys[dp];
+	++dp;
+      }
+      --actual->count;
+    }else{
+      int dp = depth_position(actual,data);
+
+      if(actual->keys[dp] == data){
+	cambiar = actual;
+	pos = dp;
+	dp = dp+1;
+      }
+      auto donde_ire = actual->keys[dp];
+      remove(donde_ire,data,cambiar,pos);
+      
+
+      if(donde_ire->count < (M-1)/2){
+
+	if(cambiar == actual && donde_ire->isLeaf()) cambiar = nullptr;
+	if(dp > 0 && actual->children[dp-1]->count > (M-1)/2) {
+	  right_rot(actual,actual->children[dp-1],actual->children[dp],dp-1);
+
+	}
+	else if( dp < actual->count && actual->children[dp+1]->count > (M-1)/2 ){
+	  left_rot(actual,actual->children[dp],actual->children[dp+1],dp);
+	}else if(dp > 0){
+
+	  merge(actual,actual->children[dp-1],actual->children[dp],dp-1);
+	  donde_ire = actual->children[dp-1];
+
+	}else if(dp < actual->count){
+
+	  merge(actual,actual->children[dp],actual->children[dp+1],dp);
+	}
+
+
+      }
+
+      if(cambiar != nullptr && donde_ire->isLeaf() ){
+	cambiar->keys[pos] = donde_ire->keys[0];
+	cambiar = nullptr;
+	pos = -1;
+
+      }
+
+
+
+
+
+    }
+  }
   void remove(T data){}
 
   private:
-  void merge(Node*& nodo, Node* left, Node*right,int & depht_pos, T data){}
-  void left_rot(Node*nodo,Node*left,Node* right,int & depht_pos,T data){}
-  void right_rot(Node*nodo,Node*left,Node* right,int & depht_pos,T data){}
+  void merge(Node*& nodo, Node* left, Node*right,int  depht_pos){
+    if(!left->isLeaf()){
+      left->keys[left->count++] = nodo->keys[depht_pos];
+
+      int temp_c = left->count;
+
+      for(int i = 0;i<= right->count;++i){
+	left->children[temp_c++] = right->children[i];
+      }
+    }else{
+      left->next = right->next;
+    }
+
+    for(int i = 0;i < right->count;++i){
+      left->keys[left->count++] = right->keys[i];
+
+    }
+
+    delete[] right->keys;
+    delete[] right->children;
+
+    if(nodo == root && nodo->count == 1){
+      delete[] nodo->keys;
+      delete[] nodo->children;
+      nodo = left; 
+    }else{
+      int dp = depht_pos + 1;
+      while(dp < nodo->count){
+	nodo->keys[dp-1] = nodo->keys[dp];
+	++dp;
+      }
+      --nodo->count;
+
+    }
+
+  }
+  void left_rot(Node*nodo,Node*left,Node* right,int  depht_pos){
+
+  }
+  void right_rot(Node*nodo,Node*left,Node* right,int depht_pos){
+
+  }
 
   pair<Node*,int> findSucc(T data){
     auto temp = root;
@@ -295,7 +390,7 @@ class b_plus_tree{
   void show_Range(T begin, T end){
     if(begin == end) cout<<begin;
     else if(begin > end) return;
-    
+
 
     auto buscar = findSucc(begin);
     if(buscar.first != nullptr){

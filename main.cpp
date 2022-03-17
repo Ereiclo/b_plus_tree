@@ -39,8 +39,8 @@ int main(){
 
   /* bmas.showInOrder(); */
 
-  /* cout<<bmas.find(153); */
-  bmas.show_Range(211,312);
+  /* cout<<bmas.find(200); */
+  /* bmas.show_Range(211,312); */
 
 
 
