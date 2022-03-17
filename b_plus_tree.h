@@ -42,23 +42,28 @@ class b_plus_tree{
   Node* root{nullptr};
 
 
-  b_plus_tree(int M){
+  public:
+  b_plus_tree(int M_){
+    M = M_;
     root = new Node(M);
     root->leaf = 1;
+
   }
 
+  private:
 
   pair<pair<Node*,Node*>,T> leaf_division_pre(Node*& leaf, T data){
     Node* right = new Node(M);
     right->leaf = 1;
-    int pos_subir = (M-1)/2;
+    int pos_subir = M % 2 == 0 ? M/2 :  (M-1)/2;
     int temp = 0;
     int count = 0;
     int insert = depth_position(leaf,data);
 
 
     for(int i = pos_subir;i<= leaf->count ;++i){
-      if(pos_subir > insert || i <= insert)
+      //if(pos_subir > insert || i <= insert)
+      if(i <= insert)
 	right->keys[temp++] = i == insert ? data : leaf->keys[i];
       else 
 	right->keys[temp++] = leaf->keys[i-1];
@@ -68,7 +73,11 @@ class b_plus_tree{
     }
     right->count = temp;
     leaf->count -= count;
-    key_insertion(leaf,insert,data);
+    if(pos_subir > insert){
+      key_insertion(leaf,data,insert);
+    }
+    /* else */
+      /* key_insertion(right,data,depth_position(right,data)); */
 
     right->next = leaf->next;
     leaf->next = right;
@@ -78,7 +87,7 @@ class b_plus_tree{
   pair<pair<Node*,Node*>,T> leaf_division(Node*&leaf){
     Node* right = new Node(M);
     right->leaf = 1;
-    int pos_subir = (M-1)/2;
+    int pos_subir = M % 2 == 0 ? M/2 :  (M-1)/2;
     int temp = 0;
 
     for(int i = pos_subir;i< leaf->count;++i){
@@ -87,15 +96,21 @@ class b_plus_tree{
     }
     right->count = temp;
     leaf->count -= temp;
+
+
     right->next = leaf->next;
     leaf->next = right;
+
+
     return {{leaf,right},right->keys[0]};
 
-
   }
+
   pair<pair<Node*,Node*>,T> node_division(Node*&node){
     Node* right = new Node(M);
-    int pos_subir = (M-1)/2;
+    
+    int pos_subir = M % 2 == 0 ? M/2 :  (M-1)/2;
+
     int temp = 0;
 
     for(int i = pos_subir + 1;i<= node->count ;++i){
@@ -110,25 +125,33 @@ class b_plus_tree{
     right->count = temp;
     node->count -= (temp + 1);
 
+
     return {{node,right},node->keys[pos_subir]};
   }
   void node_overload(Node*& node, T data, Node* left, Node* right){
 
     if(node->capacity != M + 1){
-      Node* new_node = new Node(M+1);
+      /* Node* new_node = new Node(M+1); */
+      T* n_keys = new T[M];
+      Node** n_children = new Node*[M+1];
+
       for(int i = 0;i<= node->count;++i){
 	if(i < node->count)
-	  new_node->keys[i] = node->keys[i];
+	  n_keys[i] = node->keys[i];
 
-	new_node->children[i] = node->children[i];
+	n_children[i] = node->children[i];
       }
-      new_node->next = node->next;
-      new_node->count = node->count;
-      new_node->leaf = node->leaf;
+      /* new_node->next = node->next; */
+      /* new_node->count = node->count; */
+      /* new_node->leaf = node->leaf; */
       delete[] node->keys;
       delete[] node->children;
 
-      node = new_node;
+      node->keys = n_keys;
+      node->children = n_children;
+      node->capacity = M+1;
+
+      /* node = new_node; */
     }
 
     int dp = depth_position(node, data);
@@ -150,9 +173,11 @@ class b_plus_tree{
   }
 
   void key_insertion(Node*& node, T data, int pos){
+    /* cout<<data<<endl; */
     int temp = node->count;
     while(temp != pos){
       node->keys[temp] = node->keys[temp-1];
+      --temp;
     }
     node->keys[pos] = data;
     ++node->count;
@@ -162,12 +187,14 @@ class b_plus_tree{
     int temp = node->count;
     while(temp != pos+1){
       node->children[temp] = node->children[temp-1];
+      --temp;
     }
     node->children[pos] = left;
     node->children[pos+1] = right;
 
   }
 
+  public:
 
   void insert(Node*& actual,T data){
     if(actual->isLeaf()){
@@ -193,10 +220,11 @@ class b_plus_tree{
       }
     }else{
       int ir = depth_position(actual,data);
+      /* cout<<ir<<endl; */
       insert(actual->children[ir],data);
       Node* donde_fui = actual->children[ir];
 
-      if(donde_fui->count < (M-1)/2){
+      if(donde_fui->count > M-1){
 	pair<pair<Node*,Node*>,T> retorno;
 	if(donde_fui->isLeaf()){
 	  retorno = leaf_division(donde_fui);
@@ -237,15 +265,76 @@ class b_plus_tree{
 
   void remove(T data){}
 
+  private:
   void merge(Node*& nodo, Node* left, Node*right,int & depht_pos, T data){}
   void left_rot(Node*nodo,Node*left,Node* right,int & depht_pos,T data){}
   void right_rot(Node*nodo,Node*left,Node* right,int & depht_pos,T data){}
 
+  pair<Node*,int> findSucc(T data){
+    auto temp = root;
 
-  void show_Range(){}
+
+    while(!temp->isLeaf()){
+      int ir = depth_position(temp,data);
+
+      if(ir < temp->count && temp->keys[ir] == data) temp = temp->children[ir+1];
+      else temp = temp->children[ir];
+    }
+
+    for(int i = 0;i< temp->count;++i){
+      if(temp->keys[i] >= data)
+	return {temp,i};
+    }
+
+    return {temp,0};
+  }
+
+  public:
 
 
-  bool find(){ return false;}
+  void show_Range(T begin, T end){
+    if(begin == end) cout<<begin;
+    else if(begin > end) return;
+    
+
+    auto buscar = findSucc(begin);
+    if(buscar.first != nullptr){
+      int it = buscar.second;
+      auto temp = buscar.first;
+
+      while(temp->keys[it] <= end){
+	cout<<temp->keys[it++]<<" ";
+	if(it == temp->count){
+	  if(temp->next == nullptr) return;
+	  temp = temp->next;
+	  it = 0;
+	}
+
+      }
+
+
+    }
+
+  }
+
+  bool find(T data){
+    auto temp = root;
+
+
+    while(!temp->isLeaf()){
+      int ir = depth_position(temp,data);
+      if(ir < temp->count && temp->keys[ir] == data) return true;
+
+      temp = temp->children[ir];
+    }
+
+    for(int i = 0;i< temp->count;++i){
+      if(temp->keys[i] == data)
+	return true;
+    }
+
+    return false;
+  }
 
 
   void showInOrder(){
@@ -258,7 +347,7 @@ class b_plus_tree{
     while(temp != nullptr){
       for(int i = 0;i< temp->count;++i)
 	cout<<temp->keys[i]<<" ";
-      cout<<" ";
+      cout<<"\n";
       temp = temp->next;
     }
 
