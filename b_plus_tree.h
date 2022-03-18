@@ -76,8 +76,6 @@ class b_plus_tree{
     if(pos_subir > insert){
       key_insertion(leaf,data,insert);
     }
-    /* else */
-      /* key_insertion(right,data,depth_position(right,data)); */
 
     right->next = leaf->next;
     leaf->next = right;
@@ -108,7 +106,7 @@ class b_plus_tree{
 
   pair<pair<Node*,Node*>,T> node_division(Node*&node){
     Node* right = new Node(M);
-    
+
     int pos_subir = M % 2 == 0 ? M/2 :  (M-1)/2;
 
     int temp = 0;
@@ -131,7 +129,6 @@ class b_plus_tree{
   void node_overload(Node*& node, T data, Node* left, Node* right){
 
     if(node->capacity != M + 1){
-      /* Node* new_node = new Node(M+1); */
       T* n_keys = new T[M];
       Node** n_children = new Node*[M+1];
 
@@ -141,9 +138,6 @@ class b_plus_tree{
 
 	n_children[i] = node->children[i];
       }
-      /* new_node->next = node->next; */
-      /* new_node->count = node->count; */
-      /* new_node->leaf = node->leaf; */
       delete[] node->keys;
       delete[] node->children;
 
@@ -151,7 +145,6 @@ class b_plus_tree{
       node->children = n_children;
       node->capacity = M+1;
 
-      /* node = new_node; */
     }
 
     int dp = depth_position(node, data);
@@ -173,7 +166,6 @@ class b_plus_tree{
   }
 
   void key_insertion(Node*& node, T data, int pos){
-    /* cout<<data<<endl; */
     int temp = node->count;
     while(temp != pos){
       node->keys[temp] = node->keys[temp-1];
@@ -220,7 +212,6 @@ class b_plus_tree{
       }
     }else{
       int ir = depth_position(actual,data);
-      /* cout<<ir<<endl; */
       insert(actual->children[ir],data);
       Node* donde_fui = actual->children[ir];
 
@@ -286,7 +277,7 @@ class b_plus_tree{
   void remove(Node*& actual,T data,Node*&cambiar,int&pos){
     if(actual->isLeaf()){
       int dp = depth_position(actual,data) + 1;
-      
+
       while(dp < actual->count){
 	actual->keys[dp-1] = actual->keys[dp];
 	++dp;
@@ -302,7 +293,7 @@ class b_plus_tree{
       }
       auto donde_ire = actual->children[dp];
       remove(donde_ire,data,cambiar,pos);
-      
+
 
       if(donde_ire->count < (M-1)/2){
 
@@ -318,9 +309,6 @@ class b_plus_tree{
 	  if(dp > 0){
 
 
-	    /* auto a = donde_ire; */
-	    /* auto b = actual->children[dp-1]; */
-	    /* auto c = actual->children[dp]; */
 
 	    merge(actual,actual->children[dp-1],actual->children[dp],dp-1);
 	    donde_ire = actual->children[dp-1];
@@ -372,8 +360,6 @@ class b_plus_tree{
     if(nodo == root && nodo->count == 1){
       delete[] nodo->keys;
       delete[] nodo->children;
-      /* Node* a = nullptr; */
-      /* a->count = 0; */
       nodo = left; 
     }else{
       int dp = depht_pos + 1;
@@ -383,7 +369,6 @@ class b_plus_tree{
 	++dp;
       }
       --nodo->count;
-      /* cout<<nodo->children[0]->keys[0]<<endl; */
 
     }
 
@@ -491,7 +476,6 @@ class b_plus_tree{
   T min(){
     auto temp = root;
     while(!temp->isLeaf()){
-      /* cout<<temp->keys[0]<<endl; */
       temp = temp->children[0];
     }
 
