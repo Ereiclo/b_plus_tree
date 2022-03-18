@@ -322,7 +322,7 @@ class b_plus_tree{
   void remove(T data){}
 
   private:
-  void merge(Node*& nodo, Node* left, Node*right,int  depht_pos){
+  void merge(Node*& nodo, Node*& left, Node*&right,int  depht_pos){
     if(!left->isLeaf()){
       left->keys[left->count++] = nodo->keys[depht_pos];
 
@@ -358,10 +358,53 @@ class b_plus_tree{
     }
 
   }
-  void left_rot(Node*nodo,Node*left,Node* right,int  depht_pos){
+  void left_rot(Node*&nodo,Node*&left,Node*& right,int  depht_pos){
+    if(!left->isLeaf()){
+      key_insertion(left,nodo->keys[depht_pos],left->count);
+      two_child_insertion(left, left->children[left->count-1],right->children[0], left->count-1);
+      nodo->keys[depht_pos] = right->keys[0];
+
+      int dp = 1;
+      while(dp < right->count){
+	right->keys[dp-1] = right->keys[dp];
+	++dp;
+      }
+      --right->count;
+
+    }else{
+      key_insertion(left,right->keys[0],left->count);
+      int dp = 1;
+      while(dp < right->count){
+	right->keys[dp-1] = right->keys[dp];
+	++dp;
+      }
+      --right->count;
+      nodo->keys[depht_pos] = right->keys[0];
+
+
+    }
 
   }
-  void right_rot(Node*nodo,Node*left,Node* right,int depht_pos){
+  void right_rot(Node*&nodo,Node*&left,Node*& right,int depht_pos){
+    if(!left->isLeaf()){
+
+      key_insertion(right,nodo->keys[depht_pos],0);
+
+      two_child_insertion(right, left->children[left->count],right->children[0], 0);
+
+      nodo->keys[depht_pos] = left->keys[left->count-1];
+
+      --left->count;
+
+    }else{
+
+
+      key_insertion(right,left->keys[left->count -1],0);
+      --left->count;
+      nodo->keys[depht_pos] = right->keys[0];
+
+
+    }
 
   }
 
